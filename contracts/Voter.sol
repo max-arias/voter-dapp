@@ -64,6 +64,17 @@ contract Voting {
     _;
   }
 
+  //Make sure the candidate is in the proposal
+  modifier candidateInProposal(address candidate, uint256 proposalIndex) {
+    Proposal storage proposal = proposals[proposalIndex];
+
+    require(
+      proposal.candidates[candidate] != 0,
+      "Candidate is not registered in the Proposal"
+    );
+    _;
+  }
+
   modifier canRegisterToProposal(address candidate, uint256 proposalIndex) {
     Proposal storage proposal = proposals[proposalIndex];
 
@@ -72,6 +83,11 @@ contract Voting {
         block.timestamp <= proposal.registrationEnd,
       "Outside Registration window for this Proposal"
     );
+    _;
+  }
+
+  modifier isCandidate(address candidate) {
+    require(candidate == msg.sender, "The candidate is not the sender");
     _;
   }
 
@@ -129,34 +145,32 @@ contract Voting {
     proposal.candidates[candidate] = candidatesIdx;
   }
 
-  /*
   function removeCandidateFromProposal(address candidate, uint256 proposalIndex)
     public
+    isCandidate(candidate)
     proposalExists(proposalIndex)
+    candidateInProposal(candidate, proposalIndex)
   {
     Proposal storage proposal = proposals[proposalIndex];
 
-    require(
-      proposal.candidates[candidate] != 0,
-      "The candidate is not registered in this proposal"
-    );
-
     // What's the index position of the candidate?
-    uint256 index = hasRegistered[candidate];
+    uint256 candidateIndex = proposal.candidates[candidate];
 
-    require(index > 0, "The candidate is not registered in this election");
+    // Last item
+    address lastCandidate =
+      proposal.candidateArr[proposal.candidateArr.length - 1];
 
-    // Swap positions of the last item and the candidate we want to remove
-    Candidate memory lastValue = candidates[candidates.length - 1];
-    candidates[index - 1] = lastValue; // adjust for 1-based indexing
-    candidates[candidates.length - 1] = candidates[index - 1];
+    // Move last item to the position of the candidate we want to remove
+    proposal.candidateArr[candidateIndex] = lastCandidate;
+    // Move the candidate to the last position
+    proposal.candidateArr[proposal.candidateArr.length - 1] = proposal
+      .candidateArr[candidateIndex];
 
     // Remove the last array item (ie. the item we want to remove)
     // Set the index position to 0 for this candidate to remove it
-    candidates.pop();
-    hasRegistered[candidate] = 0;
+    proposal.candidateArr.pop();
+    proposal.candidates[candidate] = 0;
   }
-*/
 
   // Returns all candidates in the Proposal
   function getProposalCandidates(uint256 proposalIndex)
