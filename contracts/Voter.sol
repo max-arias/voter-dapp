@@ -1,5 +1,5 @@
 //SPDX-License-Identifier: MIT
-pragma solidity >=0.7.0 <0.9.0;
+pragma solidity ^0.8.3;
 
 struct Proposal {
   address owner;
@@ -14,7 +14,18 @@ struct Proposal {
   address[] candidateArr;
 }
 
-contract Voting {
+struct NakedProposal {
+  address owner;
+  uint256 registrationStart;
+  uint256 registrationEnd;
+  uint256 votingStart;
+  uint256 votingEnd;
+  string name;
+  string description;
+  bool active;
+}
+
+contract Voter {
   // Workaround for creating Structs with mappings
   uint256 numProposals;
   mapping(uint256 => Proposal) proposals;
@@ -182,5 +193,31 @@ contract Voting {
     Proposal storage proposal = proposals[proposalIndex];
 
     return proposal.candidateArr;
+  }
+
+  // Returns proposals
+  // TODO: Figure out a way to return an array of structs with a mapping inside
+  function getProposals() public view returns (NakedProposal[] memory) {
+    NakedProposal[] storage proposalsToReturn = NakedProposal[];
+
+    for (uint256 i = 0; i < numProposals; i++) {
+      Proposal storage proposal = proposals[i];
+
+      NakedProposal memory newNakedProposal =
+        NakedProposal({
+          owner: proposal.owner,
+          registrationStart: proposal.registrationStart,
+          registrationEnd: proposal.registrationEnd,
+          votingStart: proposal.votingStart,
+          votingEnd: proposal.votingEnd,
+          name: proposal.name,
+          description: proposal.description,
+          active: proposal.active
+        });
+
+      proposalsToReturn.push(newNakedProposal);
+    }
+
+    return proposalsToReturn;
   }
 }
