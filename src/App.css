@@ -1,0 +1,21 @@
+.site-header {
+  align-items: center;
+  color: #fff;
+  display: flex;
+  justify-content: space-between;
+}
+
+.site-header h2 {
+  color: #fff;
+  margin-bottom: 0;
+}
+
+.site-layout-content {
+  min-height: calc(100vh - 64px);
+  padding: 24px;
+  background: #fff;
+}
+
+.container {
+  text-align: center;
+}

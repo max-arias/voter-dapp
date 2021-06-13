@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "@craco/craco": "^6.1.2",
+    "@ethersproject/providers": "^5.3.1",
     "@nomiclabs/hardhat-ethers": "^2.0.2",
     "@nomiclabs/hardhat-waffle": "^2.0.1",
     "@testing-library/jest-dom": "^5.11.4",
@@ -13,6 +13,9 @@
     "@types/node": "^15.12.1",
     "@types/react": "^17.0.9",
     "@types/react-dom": "^17.0.6",
+    "@web3-react/core": "^6.1.9",
+    "@web3-react/injected-connector": "^6.0.7",
+    "antd": "^4.16.2",
     "chai": "^4.3.4",
     "dotenv": "^10.0.0",
     "ethereum-waffle": "^3.3.0",
@@ -27,8 +30,8 @@
     "web-vitals": "^1.0.1"
   },
   "scripts": {
-    "start": "craco start",
-    "build": "craco build",
+    "start": "react-scripts start",
+    "build": "react-scripts build",
     "test": "npx hardhat test",
     "compile": "npx hardhat compile",
     "serve": "npx hardhat node",
@@ -53,11 +56,7 @@
     ]
   },
   "devDependencies": {
-    "@openzeppelin/test-helpers": "^0.5.11",
-    "autoprefixer": "^9",
-    "postcss": "^7",
     "prettier": "^2.3.0",
-    "prettier-plugin-solidity": "^1.0.0-beta.11",
-    "tailwindcss": "npm:@tailwindcss/postcss7-compat"
+    "prettier-plugin-solidity": "^1.0.0-beta.11"
   }
 }
