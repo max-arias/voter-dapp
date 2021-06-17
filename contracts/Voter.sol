@@ -61,6 +61,10 @@ contract Voter {
     _;
   }
 
+  function getProposals() public view returns (Proposal[] memory) {
+    return proposals;
+  }
+
   // Creates a new proposal
   function createProposal(
     string memory _name,

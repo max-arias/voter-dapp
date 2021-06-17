@@ -19,3 +19,7 @@
 .container {
   text-align: center;
 }
+
+.ant-spin-dot-item {
+  background-color: #fff;
+}

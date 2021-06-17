@@ -1,8 +1,11 @@
 import { useState } from "react";
-// import useSWR from "swr";
+import { ethers } from "ethers";
+import useSWR, { SWRConfig } from "swr";
+import { isAddress } from "@ethersproject/address";
+import { Contract } from "@ethersproject/contracts";
 
 // Our ABI
-// import Voter from "./artifacts/contracts/Voter.sol/Voter.json";
+import { abi as VoterAbi } from "./artifacts/contracts/Voter.sol/Voter.json";
 
 // Convenience Hook
 import { useWeb3React } from "@web3-react/core";
@@ -16,6 +19,7 @@ import {
   Divider,
   Layout,
   Row,
+  Spin,
   Typography,
 } from "antd";
 
@@ -27,36 +31,59 @@ import "./App.css";
 const { Header, Content } = Layout;
 const { Title } = Typography;
 
-// const voterContractAddress = process.env.REACT_APP_CONTRACT_ADDRESS || "";
+const voterContractAddress = process.env.REACT_APP_CONTRACT_ADDRESS || "";
 
-// const fetcher =
-//   (library) =>
-//   (...args) => {
-//     const [method, ...params] = args;
-//     console.log(method, params);
-//     return library[method](...params);
-//   };
+const fetcher =
+  (library, abi) =>
+  async (...args) => {
+    const [arg1, arg2, ...params] = args;
+
+    // Contract call
+    if (isAddress(arg1)) {
+      const address = arg1;
+      const method = arg2;
+      try {
+        // Library not loaded? Just get an a provider
+        const provider = new ethers.providers.JsonRpcProvider();
+        const providerOrSigner = library?.getSigner() || provider;
+
+        const contract = new Contract(address, abi, providerOrSigner);
+        const res = await contract[method](...params);
+        console.log({ res });
+        return res;
+      } catch (e) {
+        console.log(e);
+      }
+    }
+
+    // it's a eth call
+    const method = arg1;
+    return library[method](arg2, ...params);
+  };
+
+const injectedConnector = new InjectedConnector({
+  supportedChainIds: [
+    1, // Mainet
+    3, // Ropsten
+    4, // Rinkeby
+    5, // Goerli
+    42, // Kovan
+    1337, // Hardhat, Localhost
+  ],
+});
 
 const App = () => {
-  const proposals = [];
-  const { account, activate } = useWeb3React();
+  const web3React = useWeb3React();
+  const { account, activate, library } = web3React;
 
-  // const { data: balance, mutate } = useSWR([], {
-  //   fetcher: fetcher(library, Voter),
-  // });
+  const { data: proposals = [], isValidating } = useSWR(
+    [voterContractAddress, "getProposals"],
+    {
+      fetcher: fetcher(library, VoterAbi),
+    }
+  );
 
   const [isOpen, setIsOpen] = useState(false);
-
-  const injectedConnector = new InjectedConnector({
-    supportedChainIds: [
-      1, // Mainet
-      3, // Ropsten
-      4, // Rinkeby
-      5, // Goerli
-      42, // Kovan
-      1337, // Hardhat, Localhost
-    ],
-  });
 
   const connectAccount = () => {
     activate(injectedConnector);
@@ -71,7 +98,7 @@ const App = () => {
   };
 
   return (
-    <>
+    <SWRConfig value={{ fetcher: fetcher(library, VoterAbi) }}>
       <Layout>
         <Header
           className="site-header"
@@ -84,13 +111,14 @@ const App = () => {
           <Title level={2}>Voter dApp</Title>
 
           <div className="account-container">
+            {isValidating ? <Spin style={{ marginRight: 12 }} /> : null}
             {account ? (
               <>
                 <Avatar
                   src={`https://avatars.dicebear.com/api/bottts/${account}.svg`}
                 />
                 <span style={{ color: "#fff", paddingLeft: 12 }}>
-                  {`${account.slice(0, 4)}...${account.slice(-4)}`}
+                  {`${account.slice(0, 6)} ... ${account.slice(-4)}`}
                 </span>
               </>
             ) : (
@@ -123,29 +151,43 @@ const App = () => {
                   dolor.
                 </p>
                 <Divider />
-                <Card
-                  title="Something to Propose?"
-                  style={{ textAlign: "center", width: "fit-content" }}
-                >
-                  <Button onClick={openProposalForm}>Create a Proposal!</Button>
-                </Card>
 
-                {proposals.length ? (
-                  <Row gutter={16}>
-                    {proposals.map((item) => (
-                      <Col span={6}>
-                        <Proposal item={item} />
-                      </Col>
-                    ))}
-                  </Row>
-                ) : null}
+                <Row gutter={[12, 12]}>
+                  {proposals.map((item) => (
+                    <Col span={8} key={item.owner}>
+                      <Proposal item={item} />
+                    </Col>
+                  ))}
+
+                  {!proposals.length && !account ? (
+                    <Col span={8}>
+                      <Button
+                        type="primary"
+                        shape="round"
+                        onClick={connectAccount}
+                      >
+                        Connect to view Proposals!
+                      </Button>
+                    </Col>
+                  ) : null}
+                  <Col span={8}>
+                    <Card
+                      title="Something to Propose?"
+                      style={{ textAlign: "center", width: "fit-content" }}
+                    >
+                      <Button onClick={openProposalForm}>
+                        Create a Proposal!
+                      </Button>
+                    </Card>
+                  </Col>
+                </Row>
               </div>
             </Col>
           </Row>
           <ProposalForm isOpen={isOpen} handleClose={closeProposalForm} />
         </Content>
       </Layout>
-    </>
+    </SWRConfig>
   );
 
   // TODO: Define these types
