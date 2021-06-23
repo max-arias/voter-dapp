@@ -23,3 +23,7 @@
 .ant-spin-dot-item {
   background-color: #fff;
 }
+
+.ant-card-meta-description {
+  min-height: 45px;
+}

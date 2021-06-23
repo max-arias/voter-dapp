@@ -1,5 +1,12 @@
-import { DatePicker, Form, Input, Modal } from "antd";
+import { useState } from "react";
+import { DatePicker, Form, Input, Modal, notification } from "antd";
 import moment from "moment";
+import { useWeb3React } from "@web3-react/core";
+
+import { fetcher } from "../utils/swr";
+import { abi as VoterAbi } from "../artifacts/contracts/Voter.sol/Voter.json";
+
+const voterContractAddress = process.env.REACT_APP_CONTRACT_ADDRESS || "";
 
 const { RangePicker } = DatePicker;
 
@@ -15,12 +22,35 @@ const layout = {
 };
 
 const ProposalForm = ({ isOpen, handleClose }) => {
+  const [confirmLoading, setConfirmLoading] = useState(false);
+  const { account, library } = useWeb3React();
+
+  const fetch = fetcher(library, VoterAbi);
+
   const [form] = Form.useForm();
 
   // Process form
-  const onCreate = (values) => {
-    console.log({ values });
-    // TODO: Hook up to web3
+  const onCreate = async (values) => {
+    const [voteStart, voteEnd] = values.voting_range;
+    try {
+      setConfirmLoading(true);
+
+      await fetch(
+        voterContractAddress,
+        "createProposal",
+        values.proposal_name,
+        values.proposal_description,
+        voteStart.unix(),
+        voteEnd.unix()
+      );
+
+      notification.success({ message: "Proposal created!" });
+      handleClose();
+    } catch (e) {
+      notification.error({ message: e });
+      handleClose();
+    }
+    setConfirmLoading(false);
   };
 
   // Voting can only happen in the future 🤯
@@ -50,6 +80,8 @@ const ProposalForm = ({ isOpen, handleClose }) => {
       onOk={handleFormSubmit}
       onCancel={handleClose}
       destroyOnClose
+      okButtonProps={{ disabled: !account }}
+      confirmLoading={confirmLoading}
     >
       <Form
         name="time_related_controls"
@@ -61,14 +93,21 @@ const ProposalForm = ({ isOpen, handleClose }) => {
         <Form.Item
           name="proposal_name"
           label="Proposal Name"
-          rules={[{ required: true }]}
+          rules={[
+            { required: true, message: "Your proposal requires a name." },
+          ]}
         >
           <Input name="proposal_name" />
         </Form.Item>
         <Form.Item
           name="voting_range"
           label="Voting Start & End"
-          rules={[{ required: true }]}
+          rules={[
+            {
+              required: true,
+              message: "Your proposal requires a Start and End date.",
+            },
+          ]}
         >
           <RangePicker
             disabledDate={disabledDate}

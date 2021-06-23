@@ -66,6 +66,7 @@ contract Voter {
   }
 
   // Creates a new proposal
+  // TODO: Validate that voting values are legit dates?
   function createProposal(
     string memory _name,
     string memory _desc,

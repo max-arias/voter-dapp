@@ -1,16 +1,10 @@
 import { Card, Avatar } from "antd";
-import { EyeOutlined } from "@ant-design/icons";
 
 const { Meta } = Card;
 
-const Proposal = ({ item }) => {
-  const shortDesc =
-    item.description.length > 32
-      ? item.description.slice(0, 32) + "..."
-      : item.description;
-
+const Proposal = ({ item, handleOpen }) => {
   return (
-    <Card hoverable actions={[<EyeOutlined key="view" />]}>
+    <Card hoverable style={{ minHeight: 168 }} onClick={handleOpen}>
       <Meta
         avatar={
           <Avatar
@@ -18,7 +12,7 @@ const Proposal = ({ item }) => {
           />
         }
         title={item.name}
-        description={shortDesc}
+        description={item.description}
       />
     </Card>
   );
