@@ -3,10 +3,7 @@ import { DatePicker, Form, Input, Modal, notification } from "antd";
 import moment from "moment";
 import { useWeb3React } from "@web3-react/core";
 
-import { fetcher } from "../utils/swr";
-import { abi as VoterAbi } from "../artifacts/contracts/Voter.sol/Voter.json";
-
-const voterContractAddress = process.env.REACT_APP_CONTRACT_ADDRESS || "";
+import fetcher from "../utils/swr";
 
 const { RangePicker } = DatePicker;
 
@@ -25,32 +22,50 @@ const ProposalForm = ({ isOpen, handleClose }) => {
   const [confirmLoading, setConfirmLoading] = useState(false);
   const { account, library } = useWeb3React();
 
-  const fetch = fetcher(library, VoterAbi);
+  const fetch = fetcher(library);
 
   const [form] = Form.useForm();
 
   // Process form
   const onCreate = async (values) => {
     const [voteStart, voteEnd] = values.voting_range;
-    try {
-      setConfirmLoading(true);
+    setConfirmLoading(true);
 
-      await fetch(
-        voterContractAddress,
-        "createProposal",
-        values.proposal_name,
-        values.proposal_description,
-        voteStart.unix(),
-        voteEnd.unix()
-      );
+    const voteStartUtc = moment(voteStart)
+      .add(voteStart.utcOffset(), "m")
+      .utc()
+      .startOf("day")
+      .unix();
 
-      notification.success({ message: "Proposal created!" });
-      handleClose();
-    } catch (e) {
-      notification.error({ message: e });
-      handleClose();
-    }
-    setConfirmLoading(false);
+    const voteEndUtc = moment(voteEnd)
+      .add(voteStart.utcOffset(), "m")
+      .utc()
+      .startOf("day")
+      .unix();
+
+    fetch(
+      "createProposal",
+      values.proposal_name,
+      values.proposal_description,
+      voteStartUtc,
+      voteEndUtc
+    )
+      .then(() => {
+        notification.success({
+          message: `Proposal "${values.proposal_name}" created!`,
+        });
+      })
+      .catch((e) => {
+        notification.error({
+          message: "There was an error processing your vote",
+          description: e?.message || e?.data?.message || "",
+        });
+      })
+      .finally(() => {
+        form.resetFields();
+        handleClose();
+        setConfirmLoading(false);
+      });
   };
 
   // Voting can only happen in the future 🤯
@@ -63,7 +78,6 @@ const ProposalForm = ({ isOpen, handleClose }) => {
     form
       .validateFields()
       .then((values) => {
-        form.resetFields();
         onCreate(values);
       })
       .catch((info) => {
