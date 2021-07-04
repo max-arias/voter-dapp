@@ -73,7 +73,7 @@ contract Voter {
   modifier hasNotVotedOnProposal(uint256 proposalIndex) {
     ProposalVotes storage proposalVote = proposalVotes[proposalIndex];
 
-    require(proposalVote.votes[msg.sender] != 0, "Already Voted on Proposal");
+    require(proposalVote.votes[msg.sender] == 0, "Already Voted on Proposal");
     _;
   }
 

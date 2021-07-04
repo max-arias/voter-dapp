@@ -40,7 +40,7 @@ const ProposalForm = ({ isOpen, handleClose }) => {
     const voteEndUtc = moment(voteEnd)
       .add(voteStart.utcOffset(), "m")
       .utc()
-      .startOf("day")
+      .endOf("day")
       .unix();
 
     fetch(

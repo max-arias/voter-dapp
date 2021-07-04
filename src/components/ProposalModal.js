@@ -32,7 +32,7 @@ const ProposalForm = ({ proposal, isOpen, handleClose }) => {
 
   // Fetch votes and voters for this proposal
   const {
-    data: [postiveVotes, negativeVotes, voters] = [0, 0, null],
+    data: [postiveVotes, negativeVotes, voters] = [0, 0, []],
     mutate: refetchVotes,
   } = useSWR(["getProposalVotes", proposal.id.toNumber()]);
 
@@ -58,7 +58,9 @@ const ProposalForm = ({ proposal, isOpen, handleClose }) => {
 
   // Check if votes has passed
   useEffect(() => {
-    if (postiveVotes?.toNumber() > negativeVotes?.toNumber()) {
+    if (
+      (postiveVotes?.toNumber?.() || 0) > (negativeVotes?.toNumber?.() || 0)
+    ) {
       setVotePassed(true);
     }
   }, [postiveVotes, negativeVotes]);
@@ -176,8 +178,10 @@ const ProposalForm = ({ proposal, isOpen, handleClose }) => {
           </Col>
           <Col span={18}>
             <Row gutter={[12, 12]}>
-              <Col span={12}>For: {postiveVotes?.toNumber()}</Col>
-              <Col span={12}>Against: {negativeVotes?.toNumber()}</Col>
+              <Col span={12}>Votes for: {postiveVotes?.toNumber?.() || 0}</Col>
+              <Col span={12}>
+                Votes against: {negativeVotes?.toNumber?.() || 0}
+              </Col>
             </Row>
           </Col>
         </Row>
@@ -188,18 +192,22 @@ const ProposalForm = ({ proposal, isOpen, handleClose }) => {
           <b>Voters:</b>
         </Col>
         <Col span={18}>
-          {voters
-            ? voters.map((v) => (
-                <Row gutter={[12, 12]}>
-                  <Col span={6}>
-                    <Avatar
-                      src={`https://avatars.dicebear.com/api/bottts/${v}.svg`}
-                    />
-                  </Col>
-                  <Col span={18}>{v}</Col>
-                </Row>
-              ))
-            : "&mdash;"}
+          {voters.length ? (
+            voters.map((v) => (
+              <Row gutter={[12, 12]} key={v}>
+                <Col span={3}>
+                  <Avatar
+                    src={`https://avatars.dicebear.com/api/bottts/${v}.svg`}
+                  />
+                </Col>
+                <Col span={21}>{v}</Col>
+              </Row>
+            ))
+          ) : (
+            <Row gutter={[12, 12]}>
+              <Col span={24}>No voters yet</Col>
+            </Row>
+          )}
         </Col>
       </Row>
 
