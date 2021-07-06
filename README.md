@@ -1,9 +1,15 @@
-# Simple voting dapp
+# Simple voting dapp 🚀
 
-- List all proposals
-  - Filter Active
-- Allow creating a proposal
-- Allow voting on active proposals
+This is a simple Voting DApp where a user can create a proposal with a voting window.
+After the voting window, voting is closed and a winner (or draw) is displayed.
+
+This project doesn't really have a purposa, I created this to start learning about web3 and get some real-ish world experience.
+
+Things covered:
+- 📄 Solidity basics (restrictions around values/mappings, modifiers, return types, etc)
+- 🌐 Web3 basics (communicating with a deployed contract, working with returned data, etc)
+- 🛳️ Deployment basics (Working with Hardhat, deploying to Infura, etc)
+- 🕵️ Testing basics (Still WIP)
 
 ## TODO
 
@@ -23,7 +29,7 @@
 - Update `REACT_APP_CONTRACT_ADDRESS` with the deployed contract address (this will only changes on every deploy)
 - Execute `yarn start` to start the local dev server
 
-## Deploy to the Ropsen Test net
+## Deploy to the Ropsten Test net
 
 - Create a new project in [Infura](https://infura.io/dashboard/ethereum).
 - Update `INFURA_PROJECT_KEY` and `REACT_APP_INFURA_PROJECT_KEY` with your project ID.
@@ -37,6 +43,7 @@
 - SWR for data fetching
 - Hardhat for Eth env/testing
 - Antd for components
+- Infura testnet
 
 ## Troubleshoot
 
