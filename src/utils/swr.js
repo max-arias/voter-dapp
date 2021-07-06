@@ -1,6 +1,6 @@
 import { ethers } from "ethers";
 import { Contract } from "@ethersproject/contracts";
-import { abi as VoterAbi } from "../artifacts/contracts/Voter.sol/Voter.json";
+import { abi as VoterAbi } from "../abi/Voter.json";
 
 const voterContractAddress = process.env.REACT_APP_CONTRACT_ADDRESS || "";
 const infuraProjectKey = process.env.REACT_APP_INFURA_PROJECT_KEY || null;
